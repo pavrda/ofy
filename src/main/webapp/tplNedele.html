@@ -1,0 +1,17 @@
+	<p>Poslední dělení: {{lastRound}}</p>
+	<p>Seznam hráčů: <input type="text" ng-model="seznamHracu" /></p>	
+	<p>Aktuální zůstatek na herním účtu: <input type="text" ng-model="balance" /></p>	
+	
+	<input type="button" value="Rozdelit kredit" ng-click="rozdelKredit()" />
+	
+	<table border="1">
+	<tr ng-repeat="item in listGames">
+		<td>{{item.id}}</td>
+		<td>{{item.player}}</td>
+		<td>{{item.gameStart}}</td>
+		<td>{{item.resultTime}}</td>
+		<td>{{item.resultGood}}</td>
+		<td>{{item.resultBad}}</td>
+		<td>{{item.status}}</td>
+	</tr>
+	</table>

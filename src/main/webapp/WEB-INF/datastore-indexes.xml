@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes autoGenerate="true">
+    <datastore-index kind="GameRecord" ancestor="false" source="manual">
+        <property name="gameType" direction="asc"/>
+        <property name="status" direction="asc"/>
+        <property name="gameStart" direction="asc"/>
+    </datastore-index>
+    <datastore-index kind="Bet" ancestor="false" source="manual">
+        <property name="player1" direction="asc"/>
+        <property name="dateCreated" direction="desc"/>
+    </datastore-index>
+    <datastore-index kind="Bet" ancestor="false" source="manual">
+        <property name="player2" direction="asc"/>
+        <property name="dateCreated" direction="desc"/>
+    </datastore-index>
+    <datastore-index kind="GameRecord" ancestor="false" source="manual">
+        <property name="player" direction="asc"/>
+        <property name="gameStart" direction="desc"/>
+    </datastore-index>
+    <datastore-index kind="GameRecord" ancestor="false" source="manual">
+        <property name="status" direction="asc"/>
+        <property name="gameType" direction="asc"/>
+        <property name="gameStart" direction="desc"/>
+    </datastore-index>
+    <datastore-index kind="PNToken" ancestor="false" source="manual">
+        <property name="player" direction="asc"/>
+        <property name="created" direction="desc"/>
+    </datastore-index>
+    <datastore-index kind="MoneyTransfer" ancestor="false" source="manual">
+        <property name="from_title" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+    <datastore-index kind="MoneyTransfer" ancestor="false" source="manual">
+        <property name="to_title" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+</datastore-indexes>
+

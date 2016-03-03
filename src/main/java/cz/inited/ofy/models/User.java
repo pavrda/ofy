@@ -1,11 +1,9 @@
-package cz.inited.ofy.model;
+package cz.inited.ofy.models;
 
 import java.util.Date;
 
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
-
-import static com.googlecode.objectify.ObjectifyService.ofy;
 
 @Entity
 public class User {
@@ -13,6 +11,7 @@ public class User {
 	@Id
     String username;
     String password;
+    String paypalMail;
     
     String firstName;
     String lastName;
@@ -28,10 +27,8 @@ public class User {
     String county;
     String country;
     
+    Date registerDate;
     Date lastLogged;
-    Date agreement1;
-    Date agreement2;
-    Date agreement3;
 
     String PNkey;
     Long credit;
@@ -158,30 +155,6 @@ public class User {
 		this.lastLogged = lastLogged;
 	}
 
-	public Date getAgreement1() {
-		return agreement1;
-	}
-
-	public void setAgreement1(Date agreement1) {
-		this.agreement1 = agreement1;
-	}
-
-	public Date getAgreement2() {
-		return agreement2;
-	}
-
-	public void setAgreement2(Date agreement2) {
-		this.agreement2 = agreement2;
-	}
-
-	public Date getAgreement3() {
-		return agreement3;
-	}
-
-	public void setAgreement3(Date agreement3) {
-		this.agreement3 = agreement3;
-	}
-
 	public String getPNkey() {
 		return PNkey;
 	}
@@ -206,6 +179,19 @@ public class User {
 		this.ticket = ticket;
 	}
 
-    
+	public String getPaypalMail() {
+		return paypalMail;
+	}
 
+	public void setPaypalMail(String paypalMail) {
+		this.paypalMail = paypalMail;
+	}
+
+	public Date getRegisterDate() {
+		return registerDate;
+	}
+
+	public void setRegisterDate(Date registerDate) {
+		this.registerDate = registerDate;
+	}
 }

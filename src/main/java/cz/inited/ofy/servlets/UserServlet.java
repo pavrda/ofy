@@ -96,7 +96,7 @@ public class UserServlet {
 
 			u.setLastLogged(new Date());
 			u.setTicket(createTicket());
-			ofy().save().entity(u);
+			ofy().save().entity(u).now();
 			request.getSession().setAttribute("username", sUsername);
 
 			return getUserInfo(request);

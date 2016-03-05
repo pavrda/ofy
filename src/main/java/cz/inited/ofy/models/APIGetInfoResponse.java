@@ -12,12 +12,12 @@ public class APIGetInfoResponse extends APIResponseBase {
 	 * Castka, o kterou se hraje v jackpotu
 	 * Hodnota je EUR * 100
 	 */
-	Integer jackpot;
+	Long gameCredit;
 
 	/**
 	 * Pokud jsem prihlasen, muj aktualni kredit
 	 */
-	Integer credit;
+	Long credit;
 
 	/**
 	 * Pokud jsem prihlasen, moje username
@@ -29,10 +29,10 @@ public class APIGetInfoResponse extends APIResponseBase {
 	 */
 	String ticket;
 
-	public Integer getCredit() {
+	public Long getCredit() {
 		return credit;
 	}
-	public void setCredit(Integer credit) {
+	public void setCredit(Long credit) {
 		this.credit = credit;
 	}
 	public String getUsername() {
@@ -47,10 +47,11 @@ public class APIGetInfoResponse extends APIResponseBase {
 	public void setTicket(String ticket) {
 		this.ticket = ticket;
 	}
-	public int getJackpot() {
-		return jackpot;
+	public Long getGameCredit() {
+		return gameCredit;
 	}
-	public void setJackpot(Integer jackpot) {
-		this.jackpot = jackpot;
-	}	
+	public void setGameCredit(Long gameCredit) {
+		this.gameCredit = gameCredit;
+	}
+
 }

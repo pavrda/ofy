@@ -23,6 +23,7 @@ import com.googlecode.objectify.ObjectifyService;
 import cz.inited.ofy.controllers.MoneyController;
 import cz.inited.ofy.models.APICheckUsernameResponse;
 import cz.inited.ofy.models.APIGetInfoResponse;
+import cz.inited.ofy.models.APIGetUserInfoResponse;
 import cz.inited.ofy.models.APIResponseBase;
 import cz.inited.ofy.models.MoneyAccount;
 import cz.inited.ofy.models.User;
@@ -35,12 +36,18 @@ import io.swagger.annotations.ApiOperation;
 public class UserServlet {
 
 	private static final String USERNAME_MASK = "[a-zA-Z0-9][a-zA-Z0-9\\._\\-]{2,}";
-
+	private MoneyController moneyController;
+	
 	// zaregistruji si vsechny entity, ktere budu pouzivat
 	static {
 		ObjectifyService.register(User.class);
 		ObjectifyService.register(MoneyAccount.class);
+	}	
+	
+	public UserServlet() {
+		moneyController = MoneyController.getInstance();
 	}
+	
 
 	@GET
 	@Path("/getInfo")
@@ -49,11 +56,11 @@ public class UserServlet {
 	public APIGetInfoResponse getInfo(@Context HttpServletRequest request) throws CustomException {
 		APIGetInfoResponse res = new APIGetInfoResponse();
 
-		res.setGameCredit(MoneyController.getInstance().getBalance("_game"));
+		res.setGameCredit(moneyController.getBalance("_game"));
 		
 		String currentUser = getCurrentUser(request);
 		if (currentUser != null) {
-			res.setCredit(MoneyController.getInstance().getBalance(currentUser));
+			res.setCredit(moneyController.getBalance(currentUser));
 		} else {
 			res.setCredit(0L);
 		}
@@ -83,7 +90,7 @@ public class UserServlet {
 
 		if ((sPassword != null) && (sTicket == null)) {
 			User u = ofy().load().type(User.class).id(sUsername).now();
-			if (!u.getPassword().equals(encryptPassword(sPassword))) {
+			if ((u == null) || (!u.getPassword().equals(encryptPassword(sPassword)))) {
 				throw new CustomException("Spatne jmeno heslo");
 			}
 
@@ -92,7 +99,7 @@ public class UserServlet {
 			ofy().save().entity(u);
 			request.getSession().setAttribute("username", sUsername);
 
-			return getInfo(request);
+			return getUserInfo(request);
 		}
 
 		if ((sPassword == null) && (sTicket != null)) {
@@ -102,7 +109,7 @@ public class UserServlet {
 			}
 			request.getSession().setAttribute("username", sUsername);
 
-			return getInfo(request);
+			return getUserInfo(request);
 		}
 
 		throw new CustomException("Spatne jmeno heslo");
@@ -186,6 +193,32 @@ public class UserServlet {
 		res.setStatus("ok");
 		return res;
 	}
+	
+    /**
+     * Vrací inforamci o přihlášeném uživateli
+     *
+     * @return <li>status</li>
+     * <li>username</li>
+     * <li>primaryRole</li>
+     */
+	@POST
+	@Path("/getUserInfo")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Vrací inforamci o přihlášeném uživateli", notes = "", response = APIGetUserInfoResponse.class)
+	public APIGetUserInfoResponse getUserInfo(@Context HttpServletRequest request) throws CustomException {
+		APIGetUserInfoResponse res = new APIGetUserInfoResponse();
+
+		APIGetInfoResponse info = getInfo(request);
+		User u = ofy().load().type(User.class).id(info.getUsername()).now();
+		u.setPassword("");
+		res.setCredit(info.getCredit());
+		res.setGameCredit(info.getGameCredit());
+		res.setTicket(u.getTicket());
+		res.setUser(u);
+		res.setUsername(info.getUsername());		
+		return res;
+	}
+	
 
 	/**
 	 * Kontroluje, jestli je mozne zaregistrovat uzivatele s takovym username

@@ -24,10 +24,6 @@ public class APIGetInfoResponse extends APIResponseBase {
 	 */
 	String username;
 
-	/**
-	 * Ticket pro pristi prihlaseni
-	 */
-	String ticket;
 
 	public Long getCredit() {
 		return credit;
@@ -40,12 +36,6 @@ public class APIGetInfoResponse extends APIResponseBase {
 	}
 	public void setUsername(String username) {
 		this.username = username;
-	}
-	public String getTicket() {
-		return ticket;
-	}
-	public void setTicket(String ticket) {
-		this.ticket = ticket;
 	}
 	public Long getGameCredit() {
 		return gameCredit;

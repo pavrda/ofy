@@ -1,11 +1,6 @@
 package cz.inited.ofy.servlets;
 
-import static com.googlecode.objectify.ObjectifyService.ofy;
-
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
 import java.util.Date;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.FormParam;
@@ -16,16 +11,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.codec.binary.Hex;
-
-import com.googlecode.objectify.ObjectifyService;
-
 import cz.inited.ofy.controllers.MoneyController;
+import cz.inited.ofy.controllers.UserController;
 import cz.inited.ofy.models.APICheckUsernameResponse;
 import cz.inited.ofy.models.APIGetInfoResponse;
 import cz.inited.ofy.models.APIGetUserInfoResponse;
 import cz.inited.ofy.models.APIResponseBase;
-import cz.inited.ofy.models.MoneyAccount;
 import cz.inited.ofy.models.User;
 import cz.inited.ofy.utils.CustomException;
 import io.swagger.annotations.Api;
@@ -35,17 +26,12 @@ import io.swagger.annotations.ApiOperation;
 @Api(tags = { "user" })
 public class UserServlet {
 
-	private static final String USERNAME_MASK = "[a-zA-Z0-9][a-zA-Z0-9\\._\\-]{2,}";
 	private MoneyController moneyController;
-	
-	// zaregistruji si vsechny entity, ktere budu pouzivat
-	static {
-		ObjectifyService.register(User.class);
-		ObjectifyService.register(MoneyAccount.class);
-	}	
+	private UserController userController;
 	
 	public UserServlet() {
 		moneyController = MoneyController.getInstance();
+		userController = UserController.getInstance();
 	}
 	
 
@@ -89,26 +75,14 @@ public class UserServlet {
 			@FormParam("password") String sPassword, @FormParam("ticket") String sTicket) throws CustomException {
 
 		if ((sPassword != null) && (sTicket == null)) {
-			User u = ofy().load().type(User.class).id(sUsername).now();
-			if ((u == null) || (!u.getPassword().equals(encryptPassword(sPassword)))) {
-				throw new CustomException("Spatne jmeno heslo");
-			}
-
-			u.setLastLogged(new Date());
-			u.setTicket(createTicket());
-			ofy().save().entity(u).now();
+			userController.loginPassword(sUsername, sPassword);
 			request.getSession().setAttribute("username", sUsername);
-
 			return getUserInfo(request);
 		}
 
 		if ((sPassword == null) && (sTicket != null)) {
-			User u = ofy().load().type(User.class).id(sUsername).now();
-			if (!u.getTicket().equals(encryptPassword(sTicket))) {
-				throw new CustomException("Spatny ticket");
-			}
+			userController.loginTicket(sUsername, sTicket);			
 			request.getSession().setAttribute("username", sUsername);
-
 			return getUserInfo(request);
 		}
 
@@ -137,7 +111,7 @@ public class UserServlet {
 		User u;
 
 		if (currentUser == null) {
-			if (!checkUsername(username)) {
+			if (!userController.checkUsername(username)) {
 				throw new CustomException("Spatne username, nelze pouzit");
 			}
 			u = new User();
@@ -148,20 +122,16 @@ public class UserServlet {
 			if (!currentUser.equals(username)) {
 				throw new CustomException("Uzivatelske jmeno nelze zmenit");
 			}
-			u = ofy().load().type(User.class).id(currentUser).now();
+			u = userController.loadUser(currentUser);
 		}
 
 		if (password.length() > 0) {
-			u.setPassword(encryptPassword(password));
+			userController.setUserPassword(u, password);
 		}
-		ofy().save().entity(u);
+		userController.saveUser(u);
 		
 		if (novaRegistrace) {
-			MoneyAccount ac = new MoneyAccount();
-			ac.setTitle(username);
-			ac.setBalance(0);
-			ac.setLastUpdate(new Date());
-			ofy().save().entity(ac);
+			moneyController.createMoneyAccount(username);
 			request.getSession().setAttribute("username", username);
 		}
 
@@ -188,7 +158,7 @@ public class UserServlet {
 		APICheckUsernameResponse res = new APICheckUsernameResponse();
 
 		res.setUsername(username);
-		res.setExists(checkUsername(username)?"1":"0");
+		res.setExists(userController.checkUsername(username)?"1":"0");
 		
 		res.setStatus("ok");
 		return res;
@@ -209,7 +179,7 @@ public class UserServlet {
 		APIGetUserInfoResponse res = new APIGetUserInfoResponse();
 
 		APIGetInfoResponse info = getInfo(request);
-		User u = ofy().load().type(User.class).id(info.getUsername()).now();
+		User u = userController.loadUser(info.getUsername());
 		u.setPassword("");
 		res.setCredit(info.getCredit());
 		res.setGameCredit(info.getGameCredit());
@@ -220,43 +190,8 @@ public class UserServlet {
 	}
 	
 
-	/**
-	 * Kontroluje, jestli je mozne zaregistrovat uzivatele s takovym username
-	 * @param username
-	 * @return true - lze pouzit, false - nelze pouzit
-	 * 
-	 */
-	private boolean checkUsername(String username) {
-		if (
-			(username == null) || 
-			(username.length()<3) || 
-			(!username.matches(USERNAME_MASK))
-		) {
-			return false;
-		}
-		User u = ofy().load().type(User.class).id(username).now();
-		return (u==null);
-	}
 	
 	
-	public static String encryptPassword(String password) {
-		// TODO: v pristi verzi nahradit silnejsi sifrou
-		try {
-			final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-			messageDigest.reset();
-			messageDigest.update(password.getBytes(Charset.forName("UTF8")));
-			final byte[] resultByte = messageDigest.digest();
-			return new String(Hex.encodeHex(resultByte));
-		} catch (Exception e) {
-			return password;
-		}
-
-	}
-
-	protected String createTicket() {
-		return UUID.randomUUID().toString();
-	}
-
 	public String getCurrentUser(HttpServletRequest request) {
 		String currentUser = (String) request.getSession().getAttribute("username");
 		return currentUser;

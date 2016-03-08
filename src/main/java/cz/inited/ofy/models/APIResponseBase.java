@@ -21,6 +21,8 @@ public class APIResponseBase {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String msg;
 
+	public APIResponseBase() {		
+	}
 
 	public String getStatus() {
 		return status;

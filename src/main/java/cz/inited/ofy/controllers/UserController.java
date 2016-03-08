@@ -91,7 +91,7 @@ public class UserController {
 	}
 
 	
-	protected String createTicket() {
+	public String createTicket() {
 		return UUID.randomUUID().toString();
 	}
 
@@ -103,6 +103,11 @@ public class UserController {
 	public User saveUser(User user) {
 		ofy().save().entity(user).now();
 		return user;
+	}
+
+	public User findUserByTicket(String ticket) {
+		User u = ofy().load().type(User.class).filterKey("ticket", ticket).first().now();
+		return u;
 	}
 	
 }

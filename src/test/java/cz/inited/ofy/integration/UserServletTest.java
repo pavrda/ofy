@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
+import cz.inited.ofy.models.APICheckUsernameResponse;
 import cz.inited.ofy.models.APIGetInfoResponse;
 import cz.inited.ofy.models.APIGetUserInfoResponse;
 import cz.inited.ofy.models.APIResponseBase;
@@ -42,6 +43,7 @@ public class UserServletTest {
 		APIResponseBase responseBase;
 		APIGetInfoResponse getInfoResponse;
 		APIGetUserInfoResponse getUserInfoResponse;
+		APICheckUsernameResponse checkUsernameResponse;
 		Client client = ClientBuilder.newClient();
 		WebTarget target = client.target("http://localhost:8080/api2");
 
@@ -71,6 +73,20 @@ public class UserServletTest {
 		assertNull(getInfoResponse.getUsername());
 
 
+		// CheckUsername pred registraci
+		//
+		System.out.println("CheckUsername:");
+		
+		res = target.path("user/checkUsername").request(MediaType.APPLICATION_JSON_TYPE)
+				.post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+		s = res.readEntity(String.class);
+		System.out.println(s);
+		checkUsernameResponse = getEntity(s, APICheckUsernameResponse.class);
+		assertThat(checkUsernameResponse.getStatus(), is(equalTo("ok")));
+		assertThat(checkUsernameResponse.getUsername(), is(equalTo(username)));
+		assertThat(checkUsernameResponse.getExists(), is(equalTo("0")));
+
+
 		// Registrace uzivatele
 		//
 		System.out.println("Registrace:");
@@ -90,6 +106,20 @@ public class UserServletTest {
 		assertNotNull(ticket);
 		assertThat(getUserInfoResponse.getTicket(), is(equalTo(ticket)));
 		assertThat(getUserInfoResponse.getUsername(), is(equalTo(username)));
+
+
+		// CheckUsername po registraci
+		//
+		System.out.println("CheckUsername:");
+		
+		res = target.path("user/checkUsername").request(MediaType.APPLICATION_JSON_TYPE)
+				.post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+		s = res.readEntity(String.class);
+		System.out.println(s);
+		checkUsernameResponse = getEntity(s, APICheckUsernameResponse.class);
+		assertThat(checkUsernameResponse.getStatus(), is(equalTo("ok")));
+		assertThat(checkUsernameResponse.getUsername(), is(equalTo(username)));
+		assertThat(checkUsernameResponse.getExists(), is(equalTo("1")));
 
 
 		// Registrace uzivatele

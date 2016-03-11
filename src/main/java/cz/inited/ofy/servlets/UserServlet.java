@@ -30,6 +30,7 @@ import io.swagger.annotations.ApiOperation;
 
 @Path("/user")
 @Api(tags = { "user" })
+@Produces(MediaType.APPLICATION_JSON)
 public class UserServlet {
 
 	private MoneyController moneyController;
@@ -45,8 +46,7 @@ public class UserServlet {
 
 	@GET
 	@Path("/getInfo")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Vraci jackpot, muj kredit, ...", notes = "Vola se v pravidelnych intervalech", response = APIGetInfoResponse.class)
+	@ApiOperation(value = "Vraci akualni informace: jackpot, muj kredit, sazky...", notes = "Vola se v pravidelnych intervalech", response = APIGetInfoResponse.class)
 	public APIGetInfoResponse getInfo(@Context HttpServletRequest request) throws CustomException {
 		String currentUser = getCurrentUser(request);
 		return getInfo(currentUser);
@@ -68,7 +68,6 @@ public class UserServlet {
 	 */
 	@POST
 	@Path("/login")
-	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Login", notes = "Pres heslo nebo pres ticket", response = APIGetInfoResponse.class)
 	public Response login(@Context HttpServletRequest request, @FormParam("username") String sUsername,
 			@FormParam("password") String sPassword) throws CustomException {
@@ -100,7 +99,6 @@ public class UserServlet {
 	 */
 	@POST
 	@Path("/registerUser")
-	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Registrace", notes = "Nova registrace nebo aktualizace. Registrace provede i login uzivatele", response = APIGetInfoResponse.class)
 	public Response registerUser(@Context HttpServletRequest request,
 			@FormParam("username") String username,
@@ -171,7 +169,6 @@ public class UserServlet {
 	
 	@GET
 	@Path("/logout")
-	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Odhlaseni", notes = "", response = APIResponseBase.class)
 	public Response logout(@Context HttpServletRequest request) {
 		String ticket = getCookie(request, "ticket");
@@ -196,13 +193,12 @@ public class UserServlet {
 	
 	@POST
 	@Path("/checkUsername")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Kontrola jestli lze username zaregistrovat", notes = "", response = APIResponseBase.class)
+	@ApiOperation(value = "Kontrola jestli lze username zaregistrovat", notes = "Kontroluje: 1. jestli obsahuje spravne znaky, 2. jestli username uz nekdo nepouziva", response = APICheckUsernameResponse.class)
 	public APICheckUsernameResponse checkUsername(@Context HttpServletRequest request, @FormParam("username") String username) {
 		APICheckUsernameResponse res = new APICheckUsernameResponse();
 
 		res.setUsername(username);
-		res.setExists(userController.checkUsername(username)?"1":"0");
+		res.setExists(userController.checkUsername(username)?"0":"1");
 		
 		res.setStatus("ok");
 		return res;
@@ -217,7 +213,6 @@ public class UserServlet {
      */
 	@GET
 	@Path("/getUserInfo")
-	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Vrací inforamci o přihlášeném uživateli", notes = "", response = APIGetUserInfoResponse.class)
 	public APIGetUserInfoResponse getUserInfo(@Context HttpServletRequest request) throws CustomException {
 

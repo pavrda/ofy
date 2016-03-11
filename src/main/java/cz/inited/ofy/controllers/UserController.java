@@ -5,6 +5,7 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.codec.binary.Hex;
@@ -106,8 +107,21 @@ public class UserController {
 	}
 
 	public User findUserByTicket(String ticket) {
-		User u = ofy().load().type(User.class).filterKey("ticket", ticket).first().now();
+		User u = ofy().load().type(User.class).filter("ticket", ticket).first().now();
 		return u;
+	}
+
+	public void logoutTicket(String ticket) {
+		List<User> ul = ofy().load().type(User.class).filter("ticket", ticket).list();
+		for (User u : ul) {
+			u.setTicket(null);
+		}
+		ofy().save().entities(ul).now();
+	}
+
+	public void validateUser(User u) {
+		//TODO: pridat validate, ktere se provadeji pri registraci nebo zmene uctu
+		return;
 	}
 	
 }

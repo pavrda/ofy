@@ -101,9 +101,24 @@ public class UserServlet {
 	@POST
 	@Path("/registerUser")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Registrace", notes = "Pres heslo nebo pres ticket", response = APIGetInfoResponse.class)
-	public Response registerUser(@Context HttpServletRequest request, @FormParam("username") String username,
-			@FormParam("password") String password) throws CustomException {
+	@ApiOperation(value = "Registrace", notes = "Nova registrace nebo aktualizace. Registrace provede i login uzivatele", response = APIGetInfoResponse.class)
+	public Response registerUser(@Context HttpServletRequest request,
+			@FormParam("username") String username,
+			@FormParam("password") String password,
+
+			@FormParam("firstName") String firstName,
+			@FormParam("lastName") String lastName,
+			@FormParam("dateOfBirth") Date dateOfBirth,
+			@FormParam("email") String email,
+			@FormParam("phone") String phone,
+			@FormParam("friendPhone") String friendPhone,
+
+			@FormParam("street") String street,
+			@FormParam("houseNr") String houseNr,
+			@FormParam("city") String city,
+			@FormParam("postcode") String postcode,
+			@FormParam("county") String county,
+			@FormParam("country") String country) throws CustomException {
 		boolean novaRegistrace = false;
 		String currentUser = getCurrentUser(request);
 		User u;
@@ -127,8 +142,23 @@ public class UserServlet {
 		if (password.length() > 0) {
 			userController.setUserPassword(u, password);
 		}
+		u.setFirstName(firstName);
+		u.setLastName(lastName);
+		u.setDateOfBirth(dateOfBirth);
+		u.setEmail(email);
+		u.setPhone(phone);
+		u.setFriendPhone(friendPhone);
+
+		u.setStreet(street);
+		u.setHouseNr(houseNr);
+		u.setCity(city);
+		u.setPostcode(postcode);
+		u.setCounty(county);
+		u.setCountry(country);
+
+		userController.validateUser(u);
 		userController.saveUser(u);
-		
+
 		if (novaRegistrace) {
 			moneyController.createMoneyAccount(username);
 		}
@@ -136,12 +166,7 @@ public class UserServlet {
 		cacheController.put("ticket-" + u.getTicket(), username);
 		NewCookie nc = new NewCookie("ticket", u.getTicket());
 		APIGetUserInfoResponse res = getUserInfo(u);
-		return Response
-			.status(200)
-			.entity(res)
-			.type("application/json")
-			.cookie(nc)
-			.build();
+		return Response.status(200).entity(res).type("application/json").cookie(nc).build();
 	}
 	
 	@GET
@@ -149,10 +174,17 @@ public class UserServlet {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Odhlaseni", notes = "", response = APIResponseBase.class)
 	public Response logout(@Context HttpServletRequest request) {
+		String ticket = getCookie(request, "ticket");
+		if ((ticket != null) && (!"".equals(ticket))) {
+			System.out.println("ticket:" + ticket);
+			userController.logoutTicket(ticket);
+			cacheController.delete("ticket-" + ticket);
+		}
+
 		APIResponseBase res = new APIResponseBase();
 		res.setStatus("ok");
 		NewCookie nc = new NewCookie(new javax.ws.rs.core.Cookie("ticket", ""), "", 0, new Date(0), false, false);
-		
+
 		return Response
 				.status(200)
 				.entity(res)

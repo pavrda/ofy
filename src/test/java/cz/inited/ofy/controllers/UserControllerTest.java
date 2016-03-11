@@ -88,7 +88,7 @@ public class UserControllerTest {
 		String ticket2 = userController.createTicket();
 		assertNotNull(ticket1);
 		assertNotNull(ticket2);
-		assertThat(ticket1, not(is(equalTo(ticket2))));		
+		assertThat(ticket1, not(is(equalTo(ticket2))));
 	}
 	
 	@Test
@@ -103,5 +103,44 @@ public class UserControllerTest {
 		assertFalse(userController.checkUsername(username));
 		assertTrue(userController.checkUsername("Test123"));		
 	}
+	
+	
+	@Test
+	public void testFindByTicket() throws CustomException {
+		String username = "test" + new Date().getTime();
+		User u = new User();
+		u.setUsername(username);
+		u.setEmail("test@test.com");
+		userController.setUserPassword(u, "Heslo123");
+		userController.saveUser(u);
+
+		u = userController.loginPassword(username, "Heslo123");
+		String ticket = u.getTicket();
+		assertNotNull(ticket);
+
+		u = userController.findUserByTicket(ticket);
+		assertThat(username, is(equalTo(u.getUsername())));
+	}
+
+	@Test
+	public void testLogoutTicket() throws CustomException {
+		String username = "test" + new Date().getTime();
+		User u = new User();
+		u.setUsername(username);
+		u.setEmail("test@test.com");
+		userController.setUserPassword(u, "Heslo123");
+		userController.saveUser(u);
+
+		u = userController.loginPassword(username, "Heslo123");
+		String ticket = u.getTicket();
+		assertNotNull(ticket);
+
+		userController.logoutTicket(ticket);
+		
+		u = userController.findUserByTicket(ticket);
+		assertNull(u);
+	}
+	
+	
 	
 }

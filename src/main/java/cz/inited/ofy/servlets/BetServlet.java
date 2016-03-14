@@ -8,36 +8,73 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import cz.inited.ofy.models.APIGetInfoResponse;
+import cz.inited.ofy.models.APIBetListResponse;
 import cz.inited.ofy.models.APIResponseBase;
 import cz.inited.ofy.utils.CustomException;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
+@Path("/bet")
+@Api(tags = { "Bets" })
 public class BetServlet {
 
-    /**
-     * Zaregistruje novou sazku
-     *
-     * @param username
-     * @return exists - 1 nebo 0, fullName - pokud existuje
-     */
+	/**
+	 * Zrusi sazku
+	 * 
+	 * @param request
+	 * @param betId
+	 * @return
+	 * @throws CustomException
+	 */
 	@POST
-	@Path("/betRegister")
+	@Path("/betDelete")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Login", notes = "Pres heslo nebo pres ticket", response = APIGetInfoResponse.class)
-	public APIResponseBase betRegister(@Context HttpServletRequest request, @FormParam("username") String sUsername,
-			@FormParam("password") String sPassword, @FormParam("ticket") String sTicket) throws CustomException {
+	@ApiOperation(value = "Zrusi sazku", notes = "Rusi moji sazku nebo odmita vyzvu", response = APIResponseBase.class)
+	public APIResponseBase betDelete(
+			@Context HttpServletRequest request,
+			@FormParam("betId") String betId
+		) throws CustomException {
 		return null;
 	}
 
+	/**
+	 * Zobrazi seznam sazek
+	 * 
+	 * @param request
+	 * @param filter
+	 * @return
+	 * @throws CustomException
+	 */
 	@POST
 	@Path("/betList")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Login", notes = "Pres heslo nebo pres ticket", response = APIGetInfoResponse.class)
-	public APIResponseBase betList(@Context HttpServletRequest request, @FormParam("username") String sUsername,
-			@FormParam("password") String sPassword, @FormParam("ticket") String sTicket) throws CustomException {
+	@ApiOperation(value = "Zobrazi seznam sazek", notes = "Zobrazi seznam sazek", response = APIBetListResponse.class)
+	public APIBetListResponse betList(
+			@Context HttpServletRequest request,
+			@FormParam("filter") String filter
+		) throws CustomException {
 		return null;
 	}
-	
+
+	/**
+	 * Smaze sazky ze seznamu sazek
+	 * Oznaci je jako smazane
+	 * 
+	 * @param request
+	 * @param betIds
+	 * @return
+	 * @throws CustomException
+	 */
+	@POST
+	@Path("/betListDelete")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Smaze sazky ze seznamu sazek", notes = "Takto smazane sazky nebudou videt v aplikaci", response = APIResponseBase.class)
+	public APIResponseBase gameListDelete(
+			@Context HttpServletRequest request,
+			@ApiParam(value="Seznam gameId oddeleny carkou")	@FormParam("gameIds") String gameIds
+		) throws CustomException {
+		return null;
+	}
 
 }

@@ -20,7 +20,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @Path("/system")
-@Api(tags = {"system"})
+@Api(tags = {"System"})
 public class SystemServlet {
 
 	private MoneyController moneyController;
@@ -39,7 +39,7 @@ public class SystemServlet {
 	@GET
 	@Path("/init")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Inicializace", notes = "Zalozi ucty, nastavi default parametry")
+	@ApiOperation(value = "Inicializace systemu", notes = "Zalozi ucty, nastavi default parametry")
 	public APIResponseBase init() throws CustomException {
 		APIResponseBase res = new APIResponseBase();
 		moneyController.createMoneyAccount("_game");

@@ -28,10 +28,10 @@ public class BetServlet {
 	 * @throws CustomException
 	 */
 	@POST
-	@Path("/betDelete")
+	@Path("/betCancel")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(value = "Zrusi sazku", notes = "Rusi moji sazku nebo odmita vyzvu", response = APIResponseBase.class)
-	public APIResponseBase betDelete(
+	public APIResponseBase betCancel(
 			@Context HttpServletRequest request,
 			@FormParam("betId") String betId
 		) throws CustomException {
@@ -77,4 +77,16 @@ public class BetServlet {
 		return null;
 	}
 
+	@POST
+	@Path("/betCheckUser")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(value = "Hleda uzivatele pro uzavreni sazky", notes = "Pri zadavani vyzvy hledam protihrace, vola se tato funkce", response = APIResponseBase.class)
+	public APIResponseBase betCheckUser(
+			@Context HttpServletRequest request,
+			@ApiParam(value="Username, mail, telefonni cislo")	@FormParam("username") String username
+		) throws CustomException {
+		return null;
+	}
+
+	
 }

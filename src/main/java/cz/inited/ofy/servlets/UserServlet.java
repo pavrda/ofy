@@ -2,7 +2,6 @@ package cz.inited.ofy.servlets;
 
 import java.util.Date;
 
-import javax.cache.CacheManager;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.FormParam;
@@ -29,7 +28,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 @Path("/user")
-@Api(tags = { "user" })
+@Api(tags = { "Users" })
 @Produces(MediaType.APPLICATION_JSON)
 public class UserServlet {
 
@@ -44,33 +43,39 @@ public class UserServlet {
 	}
 	
 
+	/**
+	 * Vraci akualni informace: jackpot, muj kredit, sazky...
+	 * Vola se v pravidelnych intervalech a vraci informace, ktere se mohou na backendu zmenit cizim zavinenim - zmena kreditu, obdrzeni vyzvy, ...
+	 * 
+	 * @param request
+	 * @return
+	 * @throws CustomException
+	 */
 	@GET
 	@Path("/getInfo")
-	@ApiOperation(value = "Vraci akualni informace: jackpot, muj kredit, sazky...", notes = "Vola se v pravidelnych intervalech", response = APIGetInfoResponse.class)
+	@ApiOperation(value = "Vraci akualni informace: jackpot, muj kredit, sazky...", notes = "Vola se v pravidelnych intervalech a vraci informace, ktere se mohou na backendu zmenit cizim zavinenim - zmena kreditu, obdrzeni vyzvy, ...", response = APIGetInfoResponse.class)
 	public APIGetInfoResponse getInfo(@Context HttpServletRequest request) throws CustomException {
 		String currentUser = getCurrentUser(request);
 		return getInfo(currentUser);
 	}
 
 	/**
-	 * Přihlásí uživatele
-	 *
-	 * @param username
-	 * @param password
+	 * Prihlaseni uzivatele pres jmeno a heslo
+	 * 
+	 * @param request
+	 * @param sUsername
+	 * @param sPassword
 	 * @return
-	 *         <li>status - ok / error</li>
-	 *         <li>code - kód v případě chyby. "bad password" - pokud nelze
-	 *         přihlásit</li>
-	 *         <li>msg - zpráva pro uživatele</li>
-	 *         <li>... - informace o uživateli</li>
 	 * @throws CustomException
-	 *
 	 */
 	@POST
 	@Path("/login")
-	@ApiOperation(value = "Login", notes = "Pres heslo nebo pres ticket", response = APIGetInfoResponse.class)
-	public Response login(@Context HttpServletRequest request, @FormParam("username") String sUsername,
-			@FormParam("password") String sPassword) throws CustomException {
+	@ApiOperation(value = "Login", notes = "Prihlaseni uzivatele pres jmeno a heslo. Na oplatku uzivatel dostane ticket ve forme cookie. Ten musi posilat pri volani dalsich requestu", response = APIGetInfoResponse.class)
+	public Response login(
+			@Context HttpServletRequest request,
+			@FormParam("username") String sUsername,
+			@FormParam("password") String sPassword
+		) throws CustomException {
 
 		User u = userController.loginPassword(sUsername, sPassword);
 		cacheController.put("ticket-" + u.getTicket(), sUsername);
@@ -167,9 +172,15 @@ public class UserServlet {
 		return Response.status(200).entity(res).type("application/json").cookie(nc).build();
 	}
 	
+	/**
+	 * Odhlaseni uzivatele
+	 * Posle prazdne cookie, smaze ho
+	 * @param request
+	 * @return
+	 */
 	@GET
 	@Path("/logout")
-	@ApiOperation(value = "Odhlaseni", notes = "", response = APIResponseBase.class)
+	@ApiOperation(value = "Odhlaseni", notes = "Posle prazdne cookie, smaze ho", response = APIResponseBase.class)
 	public Response logout(@Context HttpServletRequest request) {
 		String ticket = getCookie(request, "ticket");
 		if ((ticket != null) && (!"".equals(ticket))) {
@@ -190,7 +201,16 @@ public class UserServlet {
 				.build();
 	}
 
-	
+	/**
+	 * Kontrola jestli lze username zaregistrovat
+	 * Kontroluje:
+	 * 		1. jestli obsahuje spravne znaky,
+	 * 		2. jestli username uz nekdo nepouziva
+	 * 
+	 * @param request
+	 * @param username
+	 * @return
+	 */
 	@POST
 	@Path("/checkUsername")
 	@ApiOperation(value = "Kontrola jestli lze username zaregistrovat", notes = "Kontroluje: 1. jestli obsahuje spravne znaky, 2. jestli username uz nekdo nepouziva", response = APICheckUsernameResponse.class)
@@ -204,16 +224,17 @@ public class UserServlet {
 		return res;
 	}
 	
-    /**
-     * Vrací inforamci o přihlášeném uživateli
-     *
-     * @return <li>status</li>
-     * <li>username</li>
-     * <li>primaryRole</li>
-     */
+	/**
+	 * Vrací inforamci o přihlášeném uživateli
+	 * Do formulare Muj profil
+	 * 
+	 * @param request
+	 * @return
+	 * @throws CustomException
+	 */
 	@GET
 	@Path("/getUserInfo")
-	@ApiOperation(value = "Vrací inforamci o přihlášeném uživateli", notes = "", response = APIGetUserInfoResponse.class)
+	@ApiOperation(value = "Vrací inforamci o přihlášeném uživateli", notes = "Do formulare Muj profil", response = APIGetUserInfoResponse.class)
 	public APIGetUserInfoResponse getUserInfo(@Context HttpServletRequest request) throws CustomException {
 
 		User u = userController.loadUser(checkCurrentUser(request));
@@ -221,6 +242,13 @@ public class UserServlet {
 	}
 	
 
+	/**
+	 * Vytahne cookie z HTTP requestu
+	 * 
+	 * @param request
+	 * @param name
+	 * @return
+	 */
 	private String getCookie(HttpServletRequest request, String name) {
 		Cookie[] cookies = request.getCookies();
 		if (cookies != null) {
@@ -233,6 +261,13 @@ public class UserServlet {
 		return null;
 	}
 	
+	/**
+	 * Vrati username aktualne prihlaseneho uzivatele
+	 * Kdy nejsem prihlasen, vraci NULL
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public String getCurrentUser(HttpServletRequest request) {
 		final String ticket = getCookie(request, "ticket");
 		if (ticket == null) {
@@ -248,12 +283,19 @@ public class UserServlet {
 				}
 			});
 		} catch (CustomException e) {
-			// TODO Auto-generated catch block
+			// Nemelo by se stat. Zapisu chybu a pokracuji jako neprihlaseny
 			e.printStackTrace();
 			return null;
 		}
 	}
 
+	/**
+	 * Vrati username aktualne prihlaseneho uzivatele
+	 * Kdy nejsem prihlasen, vraci exception
+	 * 
+	 * @param request
+	 * @return
+	 */
 	public String checkCurrentUser(HttpServletRequest request) throws CustomException {
 		String currentUser = getCurrentUser(request);
 		if (currentUser == null) {
@@ -262,6 +304,12 @@ public class UserServlet {
 		return currentUser;
 	}
 
+	/**
+	 * Naplni strukturu APIGetUSerInfoResponse pro zadaneho uzivatele
+	 * @param u
+	 * @return
+	 * @throws CustomException
+	 */
 	private APIGetUserInfoResponse getUserInfo(User u) throws CustomException {
 		APIGetUserInfoResponse res = new APIGetUserInfoResponse();
 		APIGetInfoResponse info = getInfo(u.getUsername());
@@ -274,6 +322,12 @@ public class UserServlet {
 		return res;
 	}
 
+	/**
+	 * Naplni strukturu APIGetInfoResponse pro zadaneho uzivatele
+	 * @param username
+	 * @return
+	 * @throws CustomException
+	 */
 	private APIGetInfoResponse getInfo(String username) throws CustomException {
 		APIGetInfoResponse res = new APIGetInfoResponse();
 

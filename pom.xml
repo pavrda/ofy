@@ -21,6 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<jackson-2-version>2.7.2</jackson-2-version>
 	<org.mockito.version>1.10.19</org.mockito.version>
+	<org.slf4j-version>1.7.19</org.slf4j-version>
     </properties>
 
     <prerequisites>
@@ -82,7 +83,7 @@
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-api-1.0-sdk</artifactId>
-            <version>1.9.32</version>
+            <version>${gae.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -115,7 +116,7 @@
 <dependency>
   <groupId>io.swagger</groupId>
   <artifactId>swagger-jersey2-jaxrs</artifactId>
-  <version>1.5.0</version>
+  <version>1.5.8</version>
 </dependency>
 
 
@@ -125,13 +126,7 @@
         <dependency>
             <groupId>com.google.appengine</groupId>
             <artifactId>appengine-testing</artifactId>
-            <version>1.9.26</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.appengine</groupId>
-            <artifactId>appengine-api-stubs</artifactId>
-            <version>1.9.26</version>
+            <version>${gae.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- Other Dependencies -->
@@ -230,6 +225,20 @@
             </exclusions>
             <scope>test</scope>
         </dependency>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${org.slf4j-version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j-version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -304,7 +313,7 @@
             <plugin>
                 <groupId>com.google.appengine</groupId>
                 <artifactId>appengine-maven-plugin</artifactId>
-                <version>1.9.26</version>
+                <version>${gae.version}</version>
                 <configuration>
                     <enableJarClasses>false</enableJarClasses>
                     <!-- Comment in the below snippet to bind to all IPs instead of just localhost -->
